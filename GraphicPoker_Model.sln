@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poker_Model", "..\Poker_Model\Poker_Model\Poker_Model.csproj", "{3EC25E69-DB51-43B6-865C-25A4BC55587D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicPoker_Model", "GraphicPoker_Model\GraphicPoker_Model.csproj", "{6E9B91AC-6CDE-411E-9B7D-38EF366F98B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3EC25E69-DB51-43B6-865C-25A4BC55587D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EC25E69-DB51-43B6-865C-25A4BC55587D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EC25E69-DB51-43B6-865C-25A4BC55587D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EC25E69-DB51-43B6-865C-25A4BC55587D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E9B91AC-6CDE-411E-9B7D-38EF366F98B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E9B91AC-6CDE-411E-9B7D-38EF366F98B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E9B91AC-6CDE-411E-9B7D-38EF366F98B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E9B91AC-6CDE-411E-9B7D-38EF366F98B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54CFD5D7-2D9C-42C7-8EAD-D815F006CB46}
+	EndGlobalSection
+EndGlobal
