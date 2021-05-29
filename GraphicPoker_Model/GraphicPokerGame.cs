@@ -37,6 +37,9 @@ namespace GraphicPoker_Model
 
         private Action<string> ShowMessage;
 
+        int countCallButtonWasClickedAfterSomeoneDoAllInBet = 0;
+        bool SomeoneDoAllInBet = false;
+
         public GraphicPokerGame(List<GraphicPokerPlayer> players, Panel tableCardsPanel, Panel deckPanel, Label gameBankValueLabel,
             Button restartGameButton, Timer dealCardsTimer, Timer pauseBeetweenRoundsTimer, Timer DoAutomaticBetsTimer,
             Action<string> ShowMessage)
@@ -287,16 +290,92 @@ namespace GraphicPoker_Model
 
             HideActivePlayersCards();
 
-            if (countOfPlayersThatChooseToCheck == Players.Count)
+            ////////////////////////////
+            //bool ifSomeoneDoAllBankBet = false;
+            //foreach (var playyer in Players)
+            //{
+            //    if (playyer.Bank == 0)
+            //    {
+            //        ifSomeoneDoAllBankBet = true;
+            //        break;
+            //    }
+            //}
+            /////////////////////////////
+
+
+            //First version
+            //if (countOfPlayersThatChooseToCheck == Players.Count)
+            //{
+            //    countOfPlayersThatChooseToCheck = 0;
+            //    PauseBeetweenRounds_timer.Start();
+            //}
+            //else
+            //{
+            //    CheckIfGameOver(player);
+            //}
+
+            //Second version
+            /////////////////////
+            //if (ifSomeoneDoAllBankBet)
+            //{
+            //    //////////////
+            //    SendBetsOfPlayersToGameBank();
+            //    BankValueLabel.Text = Bank.ToString();
+            //    GoToLastRound();
+            //    //////////////
+            //}
+            //else
+            //{
+                if (countOfPlayersThatChooseToCheck == Players.Count)
+                {
+                    countOfPlayersThatChooseToCheck = 0;
+                    PauseBeetweenRounds_timer.Start();
+                }
+                else
+                {
+                    CheckIfGameOver(player);
+                }
+            //}
+            /////////////////////
+        }
+
+        ////////////////////////////
+        private void GoToLastRound()
+        {
+            PauseBeetweenRounds_timer.Tick -= PauseBeetweenRounds_timer_Tick;
+            PauseBeetweenRounds_timer.Tick += GoToLastRound_Tick;
+
+            PauseBeetweenRounds_timer.Start();
+        }
+
+        private void GoToLastRound_Tick(object sender, EventArgs e)
+        {
+            if (currentRound == Round.Fourth)
             {
-                countOfPlayersThatChooseToCheck = 0;
-                PauseBeetweenRounds_timer.Start();
+                PauseBeetweenRounds_timer.Stop();
+                GameOver();
+                RestartGameButton.Visible = true;
             }
             else
             {
-                CheckIfGameOver(player);
+                DealCardsOnTable();
+                currentRound++;
+
+                if (currentRound == Round.Third)
+                {
+                    CardSet activePlayerCardsAndTableCards;
+                    foreach (var player in Players)
+                    {
+                        activePlayerCardsAndTableCards = new CardSet();
+                        activePlayerCardsAndTableCards.Add(CardsOnTable);
+                        activePlayerCardsAndTableCards.Add(player.HandCards);
+                        player.Combination = PokerCombination.GetCombination(activePlayerCardsAndTableCards);
+                        ((GraphicPokerPlayer)player).CombinationValueLabel.Text = player.Combination.ToString();
+                    }
+                }
             }
         }
+        ////////////////////////////
 
         protected override void HideActivePlayersCards()
         {
@@ -358,37 +437,75 @@ namespace GraphicPoker_Model
 
             HideActivePlayersCards();
 
-            if (IndexOfActivePlayerInPlayersList != 0)
+            //First version
+            //if (IndexOfActivePlayerInPlayersList != 0)
+            //{
+            //    ActivePlayer.Bet += Players[IndexOfActivePlayerInPlayersList - 1].Bet - ActivePlayer.Bet;
+            //}
+            //else
+            //{
+            //    ActivePlayer.Bet += Players[Players.Count - 1].Bet - ActivePlayer.Bet;
+            //}
+
+            //Second version
+            ///////////////////////////////////
+            if (BetOfTheRound <= ActivePlayer.Bank)
             {
-                ActivePlayer.Bet += Players[IndexOfActivePlayerInPlayersList - 1].Bet - ActivePlayer.Bet;
+                ActivePlayer.Bet += BetOfTheRound - ActivePlayer.Bet;
             }
             else
             {
-                ActivePlayer.Bet += Players[Players.Count - 1].Bet - ActivePlayer.Bet;
+                ActivePlayer.Bet += ActivePlayer.Bank;
             }
+            ///////////////////////////////////
+
             player.BetValueLabel.Text = player.Bet.ToString();
             player.BankValueLabel.Text = player.Bank.ToString();
 
-            ChangeActivePlayer();
-            player = (GraphicPokerPlayer)ActivePlayer;
-
-            if (CheckIfCanActivePlayerCheck())
+            if(player.Bank == 0)
             {
-                foreach (var control in player.CheckModeControls)
-                {
-                    control.Visible = true;
-                }
+                SomeoneDoAllInBet = true;
             }
+
+            ///////////////////
+            if(SomeoneDoAllInBet)
+            {
+                countCallButtonWasClickedAfterSomeoneDoAllInBet++;
+            }
+            
+            if (countCallButtonWasClickedAfterSomeoneDoAllInBet == 3)
+            {
+                SomeoneDoAllInBet = false;
+                countCallButtonWasClickedAfterSomeoneDoAllInBet = 0;
+                
+                SendBetsOfPlayersToGameBank();
+                BankValueLabel.Text = Bank.ToString();
+                GoToLastRound();
+            }
+            //////////////////
             else
             {
-                foreach (var control in player.CallModeControls)
+                ChangeActivePlayer();
+                player = (GraphicPokerPlayer)ActivePlayer;
+
+                if (CheckIfCanActivePlayerCheck())
                 {
-                    control.Visible = true;
+                    foreach (var control in player.CheckModeControls)
+                    {
+                        control.Visible = true;
+                    }
                 }
-            }
-            if (CanTheActivePlayerMakeCombination)
-            {
-                ShowActivePlayerCombination();
+                else
+                {
+                    foreach (var control in player.CallModeControls)
+                    {
+                        control.Visible = true;
+                    }
+                }
+                if (CanTheActivePlayerMakeCombination)
+                {
+                    ShowActivePlayerCombination();
+                }
             }
         }
 
@@ -414,6 +531,10 @@ namespace GraphicPoker_Model
             player.CancelRaiseButton.Visible = true;
             player.ConfirmRaiseButton.Visible = true;
             player.SumOfRaiseTextBox.Visible = true;
+
+            //////////////////////
+            player.SumOfRaiseTextBox.Select();
+            //////////////////////
         }
 
         public void ConfirmRaise(object sender, EventArgs e)
@@ -432,9 +553,9 @@ namespace GraphicPoker_Model
                     {
                         ShowMessage("The sum of your bet must be bigger than the previous player's bet");
                     }
-                    else if (sum > Players[IndexOfActivePlayerInPlayersList].Bank)
+                    else if (sum > Players[IndexOfActivePlayerInPlayersList].Bank + Players[IndexOfActivePlayerInPlayersList].Bet)
                     {
-                        ShowMessage("The sum of your bet can not be bigger than your bank");
+                        ShowMessage("You can not bet more \"money\" than you have");
                     }
                     else
                     {
@@ -452,9 +573,9 @@ namespace GraphicPoker_Model
                     {
                         ShowMessage("The sum of the raise must be bigger than the previous player's bet");
                     }
-                    else if (sum > Players[IndexOfActivePlayerInPlayersList].Bank)
+                    else if (sum > Players[IndexOfActivePlayerInPlayersList].Bank + Players[IndexOfActivePlayerInPlayersList].Bet)
                     {
-                        ShowMessage("The sum of your bet can not be bigger than your bank");
+                        ShowMessage("You can not bet more \"money\" than you have");
                     }
                     else
                     {
@@ -499,6 +620,16 @@ namespace GraphicPoker_Model
             player.BetValueLabel.Text = player.Bet.ToString();
             player.BankValueLabel.Text = player.Bank.ToString();
 
+            //////////////
+            //if(player.Bet > BetOfTheRound) BetOfTheRound = player.Bet;
+            BetOfTheRound = player.Bet;
+
+            if (player.Bank == 0)
+            {
+                SomeoneDoAllInBet = true;
+            }
+            //////////////
+
             ChangeActivePlayer();
             player = (GraphicPokerPlayer)ActivePlayer;
 
@@ -526,6 +657,11 @@ namespace GraphicPoker_Model
             base.Restart();
             ((GraphicPokerPlayer)Winner).WinnerLabel.Visible = false;
             ((GraphicCardSet)CardsOnTable).Draw();
+
+            //////////////////
+            ((GraphicCardSet)Deck).Draw();
+            //////////////////
+
             foreach (var player in Players)
             {
                 GraphicPokerPlayer graphicPlayer = (GraphicPokerPlayer)player;
@@ -533,6 +669,11 @@ namespace GraphicPoker_Model
                 graphicPlayer.BetValueLabel.Text = player.Bet.ToString();
                 ((GraphicCardSet)player.HandCards).Draw();
             }
+
+            /////////////////////////////////
+            PauseBeetweenRounds_timer.Tick -= GoToLastRound_Tick;
+            PauseBeetweenRounds_timer.Tick += PauseBeetweenRounds_timer_Tick;
+            //////////////////////////////////
         }
 
         protected override void DeleteActivePlayerFromPlayersList()
@@ -545,11 +686,19 @@ namespace GraphicPoker_Model
         protected override void DoSmallBlind()
         {
             ((GraphicPokerPlayer)ActivePlayer).Bet += SmallBlind;
+
+            ////////////////////
+            BetOfTheRound = ActivePlayer.Bet;
+            ////////////////////
         }
 
         protected override void DoBigBlind()
         {
             ((GraphicPokerPlayer)ActivePlayer).Bet += SmallBlind * 2;
+
+            ////////////////////
+            BetOfTheRound = ActivePlayer.Bet;
+            ////////////////////
         }
 
         public override void DealTwoCardsFromDeckToPlayer(string name)
@@ -604,7 +753,7 @@ namespace GraphicPoker_Model
         protected override void GameOver()
         {
             base.GameOver();
-            SendGameBankToWinner();
+            //SendGameBankToWinner();
             ShowWinner();
         }
 
@@ -628,7 +777,7 @@ namespace GraphicPoker_Model
             if (!DidTheSmallBlindHasBeenDo)
             {
                 ShowActivePlayerCards();
-                DoSmallBlind();
+                //DoSmallBlind();
                 DidTheSmallBlindHasBeenDo = true;
                 DoAutomaticBets_timer.Start();
             }
@@ -743,6 +892,9 @@ namespace GraphicPoker_Model
                 {
                     countOfTimesDoAutomaticBets_timerWasCalled++;
                     HideActivePlayersCards();
+                    //////////
+                    DoSmallBlind();
+                    ///////////
                     ChangeActivePlayer();
                 }
                 else
