@@ -473,7 +473,7 @@ namespace GraphicPoker_Model
                 countCallButtonWasClickedAfterSomeoneDoAllInBet++;
             }
             
-            if (countCallButtonWasClickedAfterSomeoneDoAllInBet == 3)
+            if (countCallButtonWasClickedAfterSomeoneDoAllInBet == Players.Count - 1)
             {
                 SomeoneDoAllInBet = false;
                 countCallButtonWasClickedAfterSomeoneDoAllInBet = 0;
